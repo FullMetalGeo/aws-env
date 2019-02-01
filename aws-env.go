@@ -66,8 +66,22 @@ func ExportVariables(client *ssm.SSM, path string, recursive bool, format string
 		log.Panic(err)
 	}
 
+        if len(output.Parameters) == 0 {
+                input := &ssm.GetParameterInput{
+		        Name:           &path,
+		        WithDecryption: aws.Bool(true),
+	        }
+                paramOutput, _ := client.GetParameter(input)
+
+                if paramOutput.Parameter != nil {
+                        paramName := strings.Split(path, "/")
+                        name := fmt.Sprintf("%s/%s", *paramOutput.Parameter.Name, paramName[len(paramName)-1])
+                        OutputParameter(path, name, *paramOutput.Parameter.Value, format)
+                }
+        }
+
 	for _, element := range output.Parameters {
-		OutputParameter(path, element, format)
+		OutputParameter(path, *element.Name, *element.Value, format)
 	}
 
 	if output.NextToken != nil {
@@ -75,10 +89,7 @@ func ExportVariables(client *ssm.SSM, path string, recursive bool, format string
 	}
 }
 
-func OutputParameter(path string, parameter *ssm.Parameter, format string) {
-	name := *parameter.Name
-	value := *parameter.Value
-
+func OutputParameter(path string, name string, value string, format string) {
 	env := strings.ToUpper(strings.Replace(strings.Replace(strings.Trim(name[len(path):], "/"), "/", "_", -1), "-", "_", -1))
 	value = strings.Replace(value, "\n", "\\n", -1)
 
