@@ -42,11 +42,25 @@ Note that the name of the parameter will be capitalized, ie:
 Likewise, any dash characters (`-`) will be replaced with underscores (`_`), ie:
 `/prod/my-app/db-username` will be exported as `DB_USERNAME`
 
+### Colon Seperated Paths
+
 You can also pass multiple colon separated paths in the `AWS_ENV_PATH` variable:
 
 ```
 $ export "AWS_ENV_PATH=/my-app/:/my-other-app/"
 ```
+
+### Single Parameter Usage
+
+In the event that you want to pull a single parameter, you can specify it in the `AWS_ENV_PATH` variable:
+
+```
+$ export "AWS_ENV_PATH=/my-app/my-parameter"
+```
+
+If there are no parameters under `/my-app/my-parameter`, the value will be exported as `MY_PARAMETER=value`,
+note that if parameters exist under the path, ie. at `/my-app/my-parameter/some_parameter`, only the value for 
+`SOME_PARAMETER` will be returned.
 
 ### Optional Flags
 
